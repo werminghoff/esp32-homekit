@@ -22,6 +22,12 @@ extern std::string md5(const std::string str);
 #endif
 
 void md5(unsigned char* input, size_t len, unsigned char* output) {
+    {
+//        printf("\n");
+//        char* debug = bin2hex(input, len);
+//        printf("hashing %s\n", debug);
+//        free(debug);
+    }
     
 #if __APPLE__
     std::stringstream ss;
@@ -35,6 +41,13 @@ void md5(unsigned char* input, size_t len, unsigned char* output) {
 #else
     ESP_ERROR_CHECK(mbedtls_md5_ret((const unsigned char*)input, len, output));
 #endif
+    
+    {
+//        char* md5hash = bin2hex(output, 16);
+//        printf("result %s\n", md5hash);
+//        printf("\n");
+//        free(md5hash);
+    }
 }
 
 unsigned char* md5(unsigned char* input, size_t len) {

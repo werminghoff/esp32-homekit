@@ -10,20 +10,10 @@
 #define functions_hpp
 
 #include <sstream>
-
-typedef struct {
-    uint16_t magic;
-    uint16_t packet_length;
-    uint32_t unknown1;
-    uint32_t unknown2;
-    uint32_t timestamp;
-    unsigned char checksum[16];
-    unsigned char* data;
-    size_t data_size;
-} st_packet;
+#include "packets.hpp"
 
 void packet_parse(const unsigned char* raw_packet, st_packet& output);
-unsigned char* packet_build(const st_packet& packet, size_t& out_data);
+unsigned char* packet_build(const st_packet& packet, const char* token, size_t& out_packet_len);
 
 unsigned char* hex2bin(const char* token, size_t& out_length);
 unsigned char* hex2bin(const char* token);

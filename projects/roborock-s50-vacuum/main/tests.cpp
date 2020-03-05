@@ -10,6 +10,8 @@
 #include <memory>
 #include "abstractions.hpp"
 #include "functions.hpp"
+#include "packets.hpp"
+#include "config.h"
 
 #include <cassert>
 #include <cstring>
@@ -19,7 +21,7 @@
 #define TAG "tests"
 
 void test_bin2hex() {
-    
+    APP_LOG("Testing bin2hex...");
     {
         unsigned char buffer[16];
         memset(buffer, 0, 16);
@@ -50,7 +52,7 @@ void test_bin2hex() {
 }
 
 void test_hex2bin() {
-    
+    APP_LOG("Testing hex2bin...");
     {
         char* hex_string = (char*)"00000000000000000000000000000000";
         size_t len;
@@ -87,7 +89,7 @@ void test_hex2bin() {
 }
 
 void test_md5() {
-    
+    APP_LOG("Testing md5...");
     {
         char* expected = (char*)"d41d8cd98f00b204e9800998ecf8427e";
         unsigned char binary[16];
@@ -120,7 +122,7 @@ void test_md5() {
 }
 
 void test_token_to_key_iv() {
-    
+    APP_LOG("Testing token to key and iv...");
     {
         char* token = (char*)"787664594b6c3255544f6c75386f6d72";
         char* expected_key = (char*)"415a1ead769110aa2a85b79340836bad";
@@ -224,7 +226,7 @@ void test_token_to_key_iv() {
 }
 
 void test_aes() {
-    
+    APP_LOG("Testing aes...");
     // Encrypt
     {
         char* input = (char*)malloc(1024);
@@ -281,7 +283,7 @@ void test_aes() {
 }
 
 void test_packet_parse() {
-    
+    APP_LOG("Testing packet parser...");
     {
         char* hex_packet = (char*)"21310020000000000f9d73765e607dd1ffffffffffffffffffffffffffffffff";
         unsigned char* bin_packet = hex2bin(hex_packet);
@@ -303,22 +305,173 @@ void test_packet_parse() {
         assert(packet.data_size == 0);
         
     }
+}
+
+void test_packet_find_me() {
+    APP_LOG("Testing packet find_me...");
+    {
+        size_t packet_len;
+        unsigned char* data = packet_find_me(999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"find_me\",\"id\":999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_find_me(1234567, packet_len);
+        char* expected_result = (char*)"{\"method\":\"find_me\",\"id\":1234567}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_find_me(1, packet_len);
+        char* expected_result = (char*)"{\"method\":\"find_me\",\"id\":1}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_find_me(888111999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"find_me\",\"id\":888111999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+}
+
+void test_packet_start_cleaning() {
+    APP_LOG("Testing packet start_cleaning...");
+    {
+        size_t packet_len;
+        unsigned char* data = packet_start_cleaning(999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_start_cleaning(1234567, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":1234567}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_start_cleaning(1, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":1}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_start_cleaning(888111999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":888111999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+}
+
+void test_packet_stop_cleaning() {
+    APP_LOG("Testing packet stop_cleaning...");
+    {
+        size_t packet_len;
+        unsigned char* data = packet_stop_cleaning(999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_stop_cleaning(1234567, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":1234567}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_stop_cleaning(1, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":1}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_stop_cleaning(888111999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":888111999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+}
+
+void test_packet_charge() {
+    APP_LOG("Testing packet charge...");
+    {
+        size_t packet_len;
+        unsigned char* data = packet_charge(999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_charge(1234567, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":1234567}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_charge(1, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":1}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+    
+    {
+        size_t packet_len;
+        unsigned char* data = packet_charge(888111999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":888111999}";
+        assert(packet_len == strlen(expected_result));
+        assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
+    }
+}
+
+void test_packet_builder() {
+    APP_LOG("Testing packet builder...");
     
 }
 
 void run_tests() {
-    APP_LOG("Testing bin2hex...");
+    
     test_bin2hex();
-    APP_LOG("Testing hex2bin...");
     test_hex2bin();
-    APP_LOG("Testing md5...");
+    
     test_md5();
-    APP_LOG("Testing aes...");
     test_aes();
-    APP_LOG("Testing token to key and iv...");
+    
     test_token_to_key_iv();
-    APP_LOG("Testing packet parser...");
+    
     test_packet_parse();
+    
+    test_packet_find_me();
+    test_packet_start_cleaning();
+    test_packet_stop_cleaning();
+    test_packet_charge();
+    
+    test_packet_builder();
     
     APP_LOG("All tests passed! :-)");
 }

@@ -8,6 +8,7 @@
 
 #include "functions.hpp"
 #include "abstractions.hpp"
+#include "config.h"
 
 #include <cassert>
 #include <cstring>
@@ -103,6 +104,79 @@ void decrypt_packet(st_packet& packet, unsigned char* key, unsigned char* iv) {
     }
 }
 
-unsigned char* packet_build(const st_packet& packet, size_t& out_data) {
-    return nullptr;
+void buffer_write(unsigned char* buffer, uint8_t* data, size_t len, size_t& inout_index, bool inverted = false) {
+  for(int i=0;i<len;i++) {
+      if(inverted){
+        ::memcpy(&(buffer[inout_index++]), &data[(len-i)-1], 1);
+      } else {
+        ::memcpy(&(buffer[inout_index++]), &data[i], 1);
+      }
+  }
 }
+
+template<typename T>
+void buffer_write(unsigned char* buffer, T value, size_t& inout_index) {
+  T copy = value;
+  buffer_write(buffer, (uint8_t*)&copy, sizeof(copy), inout_index, true);
+}
+
+void debug_buffer(unsigned char* buffer, size_t len, const char* name) {
+    char* debug = bin2hex(buffer, len);
+    printf("%s = %s\n", debug, name);
+    free(debug);
+}
+
+unsigned char* packet_build(const st_packet& packet, const char* token, size_t& out_packet_len) {
+
+    // Calculate sizes including AES padding
+    uint8_t padding_size = (uint8_t)(CBC_BLOCK_SIZE - (packet.data_size % (int)CBC_BLOCK_SIZE));
+    if(padding_size == CBC_BLOCK_SIZE) { padding_size = 0; }
+    size_t total_data_size = packet.data_size + padding_size;
+    
+    unsigned char* encrypted_data = (unsigned char*)malloc(total_data_size);
+    if(packet.data && packet.data_size > 0) {
+        
+        unsigned char key[16];
+        unsigned char iv[16];
+        generate_key_and_iv(token, key, iv);
+        memcpy(encrypted_data, packet.data, packet.data_size);
+        memset(encrypted_data+packet.data_size, padding_size, padding_size);
+        aes_128_cbc_encrypt(key, iv, total_data_size, encrypted_data, encrypted_data);
+    }
+    
+    size_t base_size = sizeof(packet.magic);
+    base_size += sizeof(packet.packet_length);
+    base_size += sizeof(packet.unknown1);
+    base_size += sizeof(packet.unknown2);
+    base_size += sizeof(packet.timestamp);
+    base_size += sizeof(packet.checksum);
+    base_size += packet.data_size;
+    size_t total_packet_size = base_size + padding_size;
+    
+    out_packet_len = total_packet_size;
+    unsigned char* data_buffer = (unsigned char*)malloc(total_packet_size);
+    
+    // Write headers
+    size_t index = 0;
+    buffer_write<uint16_t>(data_buffer, packet.magic, index);
+    buffer_write<uint16_t>(data_buffer, total_packet_size, index);
+    buffer_write<uint32_t>(data_buffer, packet.unknown1, index);
+    buffer_write<uint32_t>(data_buffer, packet.unknown2, index);
+    buffer_write<uint32_t>(data_buffer, packet.timestamp, index);
+    
+    // Write (temporarily) the original token as the checksum
+    size_t md5_index = index;
+    memcpy((unsigned char*)packet.checksum, (unsigned char*)hex2bin(token), 16);
+    buffer_write(data_buffer, (uint8_t*)packet.checksum, sizeof(packet.checksum), index);
+    
+    // Write the encrypted data
+    buffer_write(data_buffer, (uint8_t*)encrypted_data, total_data_size, index);
+    
+    // Apply the final checksum
+    md5(data_buffer, total_packet_size, &data_buffer[md5_index]);
+    
+    free(encrypted_data);
+    return data_buffer;
+}
+
+

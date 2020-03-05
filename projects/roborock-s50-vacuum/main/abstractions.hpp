@@ -18,6 +18,10 @@
 #define APP_LOG(format, ...) ESP_LOGI(TAG, format, ## __VA_ARGS__)
 #endif
 
+#ifndef CBC_BLOCK_SIZE
+#define CBC_BLOCK_SIZE 16
+#endif
+
 void md5(unsigned char* input, size_t len, unsigned char* output);
 unsigned char* md5(unsigned char* input, size_t len);
 
