@@ -50,3 +50,13 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+projects/roborock-s50-vacuum/main/wifi_config.h
+
+projects/roborock-s50-vacuum/build/
+
+projects/roborock-s50-vacuum/sdkconfig
+
+projects/roborock-s50-vacuum/sdkconfig.old
+
+projects/roborock-s50-vacuum/main/config.h
