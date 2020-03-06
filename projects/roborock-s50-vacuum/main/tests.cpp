@@ -451,6 +451,134 @@ void test_packet_charge() {
 
 void test_packet_builder() {
     APP_LOG("Testing packet builder...");
+    {
+        unsigned char* expected_packet = hex2bin("21310040000000000f9d737653df6b1d95d2424a7fdd467b7bdd21602d29337c8cdd86b72f6d284594424bd648f93b841ee253e3d73dc7e24bd8fd3b48c862d8");
+        char* packet_data = (char*)"{\"method\":\"find_me\",\"id\":786}";
+        size_t expected_size = 0x0040;
+        
+        st_packet input;
+        input.magic = 0x2131;
+        input.packet_length = 0;
+        input.unknown1 = 0;
+        input.unknown2 = 0x0f9d7376;
+        input.timestamp = 0x53DF6B1D;
+        
+        input.data = (unsigned char*)packet_data;
+        input.data_size = strlen(packet_data);
+        
+        size_t final_packet_len = 0;
+        unsigned char* built_packet = packet_build(input, (const char*)"5a3753524a324f5a3150334162664e61", final_packet_len);
+        assert(final_packet_len == expected_size);
+        assert(memcmp(built_packet, expected_packet, expected_size) == 0);
+        
+        free(expected_packet);
+        free(built_packet);
+        
+    }
+    
+    {
+        
+        unsigned char* expected_packet = hex2bin("21310040000000000f9d73763d39c46af3152fd66eaf2e4b77430b0ff575c20fde37c1f4121bbd2b9d88ac674fbe39861d166d17323f6895f01ea7c31b7c677d");
+        char* packet_data = (char*)"{\"method\":\"find_me\",\"id\":511}";
+        size_t expected_size = 0x0040;
+        
+        st_packet input;
+        input.magic = 0x2131;
+        input.packet_length = 0;
+        input.unknown1 = 0;
+        input.unknown2 = 0x0f9d7376;
+        input.timestamp = 0x3D39C46A;
+        
+        input.data = (unsigned char*)packet_data;
+        input.data_size = strlen(packet_data);
+        
+        size_t final_packet_len = 0;
+        unsigned char* built_packet = packet_build(input, (const char*)"70326150795149434a5676715648616e", final_packet_len);
+        assert(final_packet_len == expected_size);
+        assert(memcmp(built_packet, expected_packet, expected_size) == 0);
+        
+        free(expected_packet);
+        free(built_packet);
+        
+    }
+    
+    {
+        
+        unsigned char* expected_packet = hex2bin("21310040000000000f9d737614859de41690a922b831374759038b46b12264c35d7312a3604831b1d34f60e8d21e2e6524df0ec8c6adc18619cb3517eba5e3a5");
+        char* packet_data = (char*)"{\"method\":\"find_me\",\"id\":327}";
+        size_t expected_size = 0x0040;
+        
+        st_packet input;
+        input.magic = 0x2131;
+        input.packet_length = 0;
+        input.unknown1 = 0;
+        input.unknown2 = 0x0f9d7376;
+        input.timestamp = 0x14859DE4;
+        
+        input.data = (unsigned char*)packet_data;
+        input.data_size = strlen(packet_data);
+        
+        size_t final_packet_len = 0;
+        unsigned char* built_packet = packet_build(input, (const char*)"45447a42486b705a5161664545566236", final_packet_len);
+        assert(final_packet_len == expected_size);
+        assert(memcmp(built_packet, expected_packet, expected_size) == 0);
+        
+        free(expected_packet);
+        free(built_packet);
+        
+    }
+    
+    {
+        
+        unsigned char* expected_packet = hex2bin("21310040000000000f9d7376368ed1a1f51b1d8f0afe852f6780629a116a1214b68675927b6a86d826cd48937f25fed28d2a46bdfc3045dd57aed8a068eff43a");
+        char* packet_data = (char*)"{\"method\":\"find_me\",\"id\":122}";
+        size_t expected_size = 0x0040;
+        
+        st_packet input;
+        input.magic = 0x2131;
+        input.packet_length = 0;
+        input.unknown1 = 0;
+        input.unknown2 = 0x0f9d7376;
+        input.timestamp = 0x368ED1A1;
+        
+        input.data = (unsigned char*)packet_data;
+        input.data_size = strlen(packet_data);
+        
+        size_t final_packet_len = 0;
+        unsigned char* built_packet = packet_build(input, (const char*)"33365933644e69546f6d374368397447", final_packet_len);
+        assert(final_packet_len == expected_size);
+        assert(memcmp(built_packet, expected_packet, expected_size) == 0);
+        
+        free(expected_packet);
+        free(built_packet);
+        
+    }
+    
+    {
+        
+        unsigned char* expected_packet = hex2bin("21310040000000000f9d73763d9d51997d320f1149b7df539f4d673a44f7e18a560f69d7faba0d2f9de78be11542ffb9b22d8abd7763d6e7cb523905f5cdc9ec");
+        char* packet_data = (char*)"{\"method\":\"find_me\",\"id\":77}";
+        size_t expected_size = 0x0040;
+        
+        st_packet input;
+        input.magic = 0x2131;
+        input.packet_length = 0;
+        input.unknown1 = 0;
+        input.unknown2 = 0x0f9d7376;
+        input.timestamp = 0x3D9D5199;
+        
+        input.data = (unsigned char*)packet_data;
+        input.data_size = strlen(packet_data);
+        
+        size_t final_packet_len = 0;
+        unsigned char* built_packet = packet_build(input, (const char*)"6a344f4c7356554f784f475a7a745a4e", final_packet_len);
+        assert(final_packet_len == expected_size);
+        assert(memcmp(built_packet, expected_packet, expected_size) == 0);
+        
+        free(expected_packet);
+        free(built_packet);
+        
+    }
     
 }
 
