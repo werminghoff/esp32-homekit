@@ -10,6 +10,7 @@
 #define abstractions_hpp
 
 #include <sstream>
+#include "packets.hpp"
 
 #if __APPLE__
 #define APP_LOG(format, ...) printf(format "\n", ## __VA_ARGS__)
@@ -27,4 +28,6 @@ unsigned char* md5(unsigned char* input, size_t len);
 
 void aes_128_cbc_encrypt(unsigned char* key, unsigned char* iv, size_t input_size, unsigned char* input, unsigned char* output);
 void aes_128_cbc_decrypt(unsigned char* key, unsigned char* iv, size_t input_size, unsigned char* input, unsigned char* output);
+
+
 #endif /* abstractions_hpp */

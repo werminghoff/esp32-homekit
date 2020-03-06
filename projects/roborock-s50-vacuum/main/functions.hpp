@@ -12,8 +12,10 @@
 #include <sstream>
 #include "packets.hpp"
 
-void packet_parse(const unsigned char* raw_packet, st_packet& output);
+void packet_parse(const unsigned char* raw_packet, unsigned char* token, st_packet& output);
 unsigned char* packet_build(const st_packet& packet, const char* token, size_t& out_packet_len);
+
+size_t size_padding(size_t original_size);
 
 unsigned char* hex2bin(const char* token, size_t& out_length);
 unsigned char* hex2bin(const char* token);

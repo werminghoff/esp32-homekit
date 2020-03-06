@@ -247,6 +247,13 @@ void test_aes() {
         char* hex_output = bin2hex(output, padded_size);
         assert(strcmp(expected_output, hex_output) == 0);
         
+        char output_decoded[128];
+        memset(output_decoded, 0, 128);
+        free(bin_iv);
+        bin_iv = hex2bin(iv);
+        aes_128_cbc_decrypt(bin_key, bin_iv, padded_size, (unsigned char*)output, (unsigned char*)output_decoded);
+        assert(strcmp((char*)output_decoded, input) == 0);
+        
         free(output);
         free(input);
         free(hex_output);
@@ -285,15 +292,19 @@ void test_aes() {
 void test_packet_parse() {
     APP_LOG("Testing packet parser...");
     {
+        unsigned char* expected_data = nullptr;
         char* hex_packet = (char*)"21310020000000000f9d73765e607dd1ffffffffffffffffffffffffffffffff";
-        unsigned char* bin_packet = hex2bin(hex_packet);
+        char* token = (char*)"5a3753524a324f5a3150334162664e61"; // should be ignored by packet parser, since it's just a "Hello" packet
+        
+        size_t packet_len;
+        unsigned char* bin_token = hex2bin(token);
+        unsigned char* bin_packet = hex2bin(hex_packet, packet_len);
+        
         st_packet packet;
-        packet_parse(bin_packet, packet);
+        packet_parse(bin_packet, bin_token, packet);
         
         unsigned char expected_checksum[16];
-        unsigned char expected_data[16];
         memset(expected_checksum, -1, 16);
-        memset(expected_data, -1, 16);
         
         assert(packet.magic == 0x2131);
         assert(packet.packet_length == 0x0020);
@@ -301,9 +312,52 @@ void test_packet_parse() {
         assert(packet.unknown2 == 0x0f9d7376);
         assert(packet.timestamp == 0x5e607dd1);
         assert(memcmp(packet.checksum, expected_checksum, 16) == 0);
-        assert(packet.data == nullptr);
+        assert(packet.data == expected_data);
         assert(packet.data_size == 0);
+    }
+    
+    {
+        unsigned char* expected_data = (unsigned char*)"{\"method\":\"find_me\",\"id\":786}";
+        unsigned char* expected_checksum = hex2bin("95d2424a7fdd467b7bdd21602d29337c");
+        char* hex_packet = (char*)"21310040000000000f9d737653df6b1d95d2424a7fdd467b7bdd21602d29337c8cdd86b72f6d284594424bd648f93b841ee253e3d73dc7e24bd8fd3b48c862d8";
+        char* token = (char*)"5a3753524a324f5a3150334162664e61";
         
+        size_t packet_len;
+        unsigned char* bin_packet = hex2bin(hex_packet, packet_len);
+        
+        st_packet packet;
+        packet_parse(bin_packet, (unsigned char*)token, packet);
+        
+        assert(packet.magic == 0x2131);
+        assert(packet.packet_length == 0x0040);
+        assert(packet.unknown1 == 0x00000000);
+        assert(packet.unknown2 == 0x0f9d7376);
+        assert(packet.timestamp == 0x53DF6B1D);
+        assert(memcmp(packet.checksum, expected_checksum, 16) == 0);
+        assert(packet.data_size == size_padding(strlen((char*)expected_data)));
+        assert(memcmp(packet.data, expected_data, strlen((char*)expected_data)+1) == 0);
+    }
+    
+    {
+        unsigned char* expected_data = (unsigned char*)"{\"method\":\"find_me\",\"id\":511}";
+        unsigned char* expected_checksum = hex2bin("f3152fd66eaf2e4b77430b0ff575c20f");
+        char* hex_packet = (char*)"21310040000000000f9d73763d39c46af3152fd66eaf2e4b77430b0ff575c20fde37c1f4121bbd2b9d88ac674fbe39861d166d17323f6895f01ea7c31b7c677d";
+        char* token = (char*)"70326150795149434a5676715648616e";
+        
+        size_t packet_len;
+        unsigned char* bin_packet = hex2bin(hex_packet, packet_len);
+        
+        st_packet packet;
+        packet_parse(bin_packet, (unsigned char*)token, packet);
+        
+        assert(packet.magic == 0x2131);
+        assert(packet.packet_length == 0x0040);
+        assert(packet.unknown1 == 0x00000000);
+        assert(packet.unknown2 == 0x0f9d7376);
+        assert(packet.timestamp == 0x3D39C46A);
+        assert(memcmp(packet.checksum, expected_checksum, 16) == 0);
+        assert(packet.data_size == size_padding(strlen((char*)expected_data)));
+        assert(memcmp(packet.data, expected_data, strlen((char*)expected_data)+1) == 0);
     }
 }
 
