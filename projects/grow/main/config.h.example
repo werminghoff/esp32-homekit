@@ -1,0 +1,7 @@
+#ifndef ROBOROCK_VACUUM_CONFIG_H
+#define ROBOROCK_VACUUM_CONFIG_H
+
+#define WIFI_NAME "MyNetwork"
+#define WIFI_PASSWORD "s3CuR3"
+
+#endif
