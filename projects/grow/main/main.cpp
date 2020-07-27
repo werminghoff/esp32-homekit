@@ -14,6 +14,7 @@
 #include "esp_system.h"
 
 #define TAG "app_main"
+static const gpio_num_t GPIO_WIFI_LED = GPIO_NUM_5;
 
 void init_nvs()
 {
@@ -31,13 +32,19 @@ extern "C" void app_main() {
   init_nvs();
   ESP_ERROR_CHECK(esp_event_loop_create_default());
 
+  gpio_pad_select_gpio(GPIO_WIFI_LED);
+  gpio_set_direction(GPIO_WIFI_LED, GPIO_MODE_OUTPUT);
+  gpio_set_level(GPIO_WIFI_LED, 1);
+
   wifi::init(WIFI_NAME,
             WIFI_PASSWORD,
             []() -> void {
+                gpio_set_level(GPIO_WIFI_LED, 0);
                 printf("WiFi connected\n");
                 homekit_setup();
             },
             []() -> void {
+                gpio_set_level(GPIO_WIFI_LED, 1);
                 printf("WiFi disconnected\n");
             });
 }

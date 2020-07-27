@@ -44,6 +44,7 @@ typedef struct {
 
 } DHT22SensorConfig;
 
+
 DHT22SensorConfig MakeDHT22SensorConfig(gpio_num_t pin,
                                         int humidity,
                                         const char* humidity_name,
@@ -82,23 +83,25 @@ SwitchConfig MakeSwitchConfig(bool is_on,
 }
 
 static void* accessory;
+
 static SwitchConfig switches[] = {
-  MakeSwitchConfig(false, GPIO_NUM_5, "Switch 1", "80f44397ca77"),
-  MakeSwitchConfig(false, GPIO_NUM_27, "Switch 2", "8e8f8b822726"),
-  MakeSwitchConfig(false, GPIO_NUM_32, "Switch 3", "b4543ef85efe"),
-  MakeSwitchConfig(false, GPIO_NUM_33, "Switch 4", "55ceae353ab2")
+  MakeSwitchConfig(false, GPIO_NUM_22, "Switch 22", "80f44397ca77"),
+  MakeSwitchConfig(false, GPIO_NUM_21, "Switch 21", "8e8f8b822726"),
+  MakeSwitchConfig(false, GPIO_NUM_19, "Switch 19", "b4543ef85efe"),
+  MakeSwitchConfig(false, GPIO_NUM_23, "Switch 23", "7410b4369e29"),
+
+  MakeSwitchConfig(false, GPIO_NUM_18, "Switch 18", "39903be3efc5"),
+  MakeSwitchConfig(false, GPIO_NUM_4,  "Switch 4",  "55623fd1e715"),
+  MakeSwitchConfig(false, GPIO_NUM_17, "Switch 17", "cc992a742a66"),
+  MakeSwitchConfig(false, GPIO_NUM_16, "Switch 16", "f1c769a13b26")
 };
 
 static DHT22SensorConfig dht22Sensors[] = {
-  MakeDHT22SensorConfig(GPIO_NUM_25,
-                        50, "Humidity",
-                        40, "Temperature",
+  MakeDHT22SensorConfig(GPIO_NUM_32,
+                        0, "Humidity",
+                        0, "Temperature",
                         "deacc9bb9639")
 };
-
-// 39903be3efc5
-// 55623fd1e715
-// cc992a742a66
 
 static void dht22_monitoring_task(void* arg)
 {
@@ -176,7 +179,7 @@ void* temperature_read(void* arg) {
   int idx = (int)arg;
 
   xSemaphoreTake(dht22Sensors[idx].ev_mutex, 0);
-  int temperature = (dht22Sensors[idx].temperature * 100);
+  int temperature = dht22Sensors[idx].temperature;
   xSemaphoreGive(dht22Sensors[idx].ev_mutex);
 
   return (void*)temperature;
@@ -199,7 +202,7 @@ void* humidity_read(void* arg) {
   int idx = (int)arg;
 
   xSemaphoreTake(dht22Sensors[idx].ev_mutex, 0);
-  int humidity = (dht22Sensors[idx].humidity * 100);
+  int humidity = dht22Sensors[idx].humidity;
   xSemaphoreGive(dht22Sensors[idx].ev_mutex);
 
   return (void*)humidity;
@@ -277,9 +280,7 @@ void homekit_setup() {
     switch_write((void*)i, (void*)switches[i].is_on, 0);
   }
 
-  //int* indexes = (int*)malloc(ARRAY_SIZE(dht22Sensors) * sizeof(int));
   for(int i=0; i < ARRAY_SIZE(dht22Sensors); i++) {
-    //indexes[i] = i;
     dht22Sensors[i].ev_mutex = xSemaphoreCreateBinary();
     if(dht22Sensors[i].ev_mutex == NULL) {
       ESP_LOGE(TAG, "xSemaphoreCreateBinary failed!");
@@ -295,7 +296,7 @@ void homekit_setup() {
   callback.hap_object_init = hap_object_init;
   accessory = hap_accessory_register((char*)ACCESSORY_NAME,
                                       accessory_id,
-                                      (char*)"222-33-444",
+                                      (char*)"333-44-555",
                                       (char*)MANUFACTURER_NAME,
                                       HAP_ACCESSORY_CATEGORY_OTHER,
                                       811,
