@@ -29,5 +29,6 @@ unsigned char* md5(unsigned char* input, size_t len);
 void aes_128_cbc_encrypt(unsigned char* key, unsigned char* iv, size_t input_size, unsigned char* input, unsigned char* output);
 void aes_128_cbc_decrypt(unsigned char* key, unsigned char* iv, size_t input_size, unsigned char* input, unsigned char* output);
 
+st_packet* send(const unsigned char* data, size_t data_len, const char* hex_token, const char* ipv4, uint16_t port);
 
 #endif /* abstractions_hpp */

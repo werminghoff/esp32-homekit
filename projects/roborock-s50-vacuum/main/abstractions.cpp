@@ -9,25 +9,43 @@
 #include "abstractions.hpp"
 #include "functions.hpp"
 
+#include <sstream>
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+
 #if __APPLE__
 #include <openssl/aes.h>
 
 extern std::string md5(const char* data, size_t data_len);
 extern std::string md5(const std::string str);
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 #else
+
 #include "esp_system.h"
 #include "mbedtls/aes.h"
 #include "mbedtls/md5.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include <lwip/netdb.h>
+
+#define TAG "abstractions"
+
 #endif
 
 void md5(unsigned char* input, size_t len, unsigned char* output) {
-    {
-//        printf("\n");
-//        char* debug = bin2hex(input, len);
-//        printf("hashing %s\n", debug);
-//        free(debug);
-    }
     
 #if __APPLE__
     std::stringstream ss;
@@ -41,13 +59,7 @@ void md5(unsigned char* input, size_t len, unsigned char* output) {
 #else
     ESP_ERROR_CHECK(mbedtls_md5_ret((const unsigned char*)input, len, output));
 #endif
-    
-    {
-//        char* md5hash = bin2hex(output, 16);
-//        printf("result %s\n", md5hash);
-//        printf("\n");
-//        free(md5hash);
-    }
+
 }
 
 unsigned char* md5(unsigned char* input, size_t len) {
@@ -89,3 +101,53 @@ void aes_128_cbc_decrypt(unsigned char* key, unsigned char* iv, size_t input_siz
     mbedtls_aes_free(&aes_ctx);
 #endif
 }
+
+st_packet* send(const unsigned char* data, size_t data_len, const char* hex_token, const char* ipv4, uint16_t port) {
+    
+    int sockfd;
+    struct sockaddr_in servaddr;
+    
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0 ) {
+        APP_LOG("Failed to create socket [%d]", sockfd);
+        return nullptr;
+    }
+    
+    memset(&servaddr, 0, sizeof(servaddr));
+    
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(port);
+    servaddr.sin_addr.s_addr = inet_addr(ipv4);
+    
+    ssize_t n = 0;
+    socklen_t len = 0;
+    
+    if((n = sendto(sockfd, data, data_len, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr))) != data_len) {
+        APP_LOG("Failed to send data [%d]", (int)n);
+        return nullptr;
+    }
+
+    unsigned char header[8];
+    memset(header, 0, 8);
+    len = 0;
+    if((n = recvfrom(sockfd, (void *)header, 8, MSG_PEEK, (struct sockaddr *) &servaddr, &len)) == -1) {
+        APP_LOG("Failed to receive header [%d]", (int)n);
+        return nullptr;
+    }
+    
+    uint16_t size = (*(uint16_t*)(&header[3]));
+    unsigned char packet_data[size];
+    memset(packet_data, 0, size);
+    len = 0;
+    if((n = recvfrom(sockfd, (void *)packet_data, size, 0, (struct sockaddr *) &servaddr, &len)) == -1) {
+        APP_LOG("Failed to receive body [%d]", (int)n);
+        return nullptr;
+    }
+    
+    st_packet* packet = new st_packet;
+    packet_parse((const unsigned char*)packet_data, (unsigned char*)hex_token, *packet);
+    
+    close(sockfd);
+    
+    return packet;
+}
+

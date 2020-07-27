@@ -396,11 +396,11 @@ void test_packet_find_me() {
     }
 }
 
-void test_packet_start_cleaning() {
+void test_packet_clean() {
     APP_LOG("Testing packet start_cleaning...");
     {
         size_t packet_len;
-        unsigned char* data = packet_start_cleaning(999, packet_len);
+        unsigned char* data = packet_clean(999, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -408,7 +408,7 @@ void test_packet_start_cleaning() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_start_cleaning(1234567, packet_len);
+        unsigned char* data = packet_clean(1234567, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":1234567}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -416,7 +416,7 @@ void test_packet_start_cleaning() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_start_cleaning(1, packet_len);
+        unsigned char* data = packet_clean(1, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":1}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -424,7 +424,7 @@ void test_packet_start_cleaning() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_start_cleaning(888111999, packet_len);
+        unsigned char* data = packet_clean(888111999, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_start\",\"id\":888111999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -432,47 +432,47 @@ void test_packet_start_cleaning() {
     
 }
 
-void test_packet_stop_cleaning() {
-    APP_LOG("Testing packet stop_cleaning...");
+void test_packet_pause() {
+    APP_LOG("Testing packet pause...");
     {
         size_t packet_len;
-        unsigned char* data = packet_stop_cleaning(999, packet_len);
-        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":999}";
+        unsigned char* data = packet_pause(999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_pause\",\"id\":999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
     }
     
     {
         size_t packet_len;
-        unsigned char* data = packet_stop_cleaning(1234567, packet_len);
-        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":1234567}";
+        unsigned char* data = packet_pause(1234567, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_pause\",\"id\":1234567}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
     }
     
     {
         size_t packet_len;
-        unsigned char* data = packet_stop_cleaning(1, packet_len);
-        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":1}";
+        unsigned char* data = packet_pause(1, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_pause\",\"id\":1}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
     }
     
     {
         size_t packet_len;
-        unsigned char* data = packet_stop_cleaning(888111999, packet_len);
-        char* expected_result = (char*)"{\"method\":\"app_stop\",\"id\":888111999}";
+        unsigned char* data = packet_pause(888111999, packet_len);
+        char* expected_result = (char*)"{\"method\":\"app_pause\",\"id\":888111999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
     }
     
 }
 
-void test_packet_charge() {
+void test_packet_dock() {
     APP_LOG("Testing packet charge...");
     {
         size_t packet_len;
-        unsigned char* data = packet_charge(999, packet_len);
+        unsigned char* data = packet_dock(999, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -480,7 +480,7 @@ void test_packet_charge() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_charge(1234567, packet_len);
+        unsigned char* data = packet_dock(1234567, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":1234567}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -488,7 +488,7 @@ void test_packet_charge() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_charge(1, packet_len);
+        unsigned char* data = packet_dock(1, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":1}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -496,7 +496,7 @@ void test_packet_charge() {
     
     {
         size_t packet_len;
-        unsigned char* data = packet_charge(888111999, packet_len);
+        unsigned char* data = packet_dock(888111999, packet_len);
         char* expected_result = (char*)"{\"method\":\"app_charge\",\"id\":888111999}";
         assert(packet_len == strlen(expected_result));
         assert(memcmp(data, (unsigned char*)expected_result, strlen(expected_result)) == 0);
@@ -649,9 +649,9 @@ void run_tests() {
     test_packet_parse();
     
     test_packet_find_me();
-    test_packet_start_cleaning();
-    test_packet_stop_cleaning();
-    test_packet_charge();
+    test_packet_clean();
+    test_packet_pause();
+    test_packet_dock();
     
     test_packet_builder();
     

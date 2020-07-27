@@ -23,9 +23,11 @@ typedef struct {
     size_t data_size;
 } st_packet;
 
+unsigned char* simple_message(const char* method, int id, size_t& length);
+unsigned char* packet_hello(size_t& length);
 unsigned char* packet_find_me(int id, size_t& length);
-unsigned char* packet_start_cleaning(int id, size_t& length);
-unsigned char* packet_stop_cleaning(int id, size_t& length);
-unsigned char* packet_charge(int id, size_t& length);
+unsigned char* packet_clean(int id, size_t& length);
+unsigned char* packet_pause(int id, size_t& length);
+unsigned char* packet_dock(int id, size_t& length);
 
 #endif /* packet_data_hpp */

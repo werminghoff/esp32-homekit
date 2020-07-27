@@ -88,7 +88,9 @@ size_t size_padding(size_t original_size) {
 
 void decrypt_packet(st_packet& packet, unsigned char* key, unsigned char* iv) {
     if(packet.data_size > 0 && packet.data && key && iv) {
-        aes_128_cbc_decrypt(key, iv, packet.data_size, packet.data, packet.data);
+        unsigned char output[1024];
+        aes_128_cbc_decrypt(key, iv, packet.data_size, packet.data, output);
+        memcpy(packet.data, output, packet.data_size);
     }
 }
 

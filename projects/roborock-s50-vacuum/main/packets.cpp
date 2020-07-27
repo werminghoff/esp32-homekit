@@ -7,6 +7,7 @@
 //
 
 #include "packets.hpp"
+#include "functions.hpp"
 
 #include <sstream>
 #include <cassert>
@@ -31,14 +32,18 @@ unsigned char* packet_find_me(int id, size_t& length) {
     return simple_message("find_me", id, length);
 }
 
-unsigned char* packet_start_cleaning(int id, size_t& length) {
+unsigned char* packet_clean(int id, size_t& length) {
     return simple_message("app_start", id, length);
 }
 
-unsigned char* packet_stop_cleaning(int id, size_t& length) {
-    return simple_message("app_stop", id, length);
+unsigned char* packet_pause(int id, size_t& length) {
+    return simple_message("app_pause", id, length);
 }
 
-unsigned char* packet_charge(int id, size_t& length) {
+unsigned char* packet_dock(int id, size_t& length) {
     return simple_message("app_charge", id, length);
+}
+
+unsigned char* packet_hello(size_t& length) {
+    return hex2bin("21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff", length);
 }
