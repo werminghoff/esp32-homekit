@@ -160,7 +160,7 @@ void switch_write(void* arg, void* value, int len)
   }
 
   if (switches[idx].ev_handle) {
-    hap_event_response(accessory, switches[idx].ev_handle, (void*)isOn);
+    hap_event_response(accessory, switches[idx].ev_handle, (void*)switches[idx].is_on);
   }
 }
 
@@ -286,7 +286,7 @@ void homekit_setup() {
       ESP_LOGE(TAG, "xSemaphoreCreateBinary failed!");
       esp_restart();
     }
-    xTaskCreate(&dht22_monitoring_task, dht22Sensors[i].serial, 2048, (void*)i, 5, NULL );
+    //xTaskCreate(&dht22_monitoring_task, dht22Sensors[i].serial, 1024, (void*)i, 5, NULL );
   }
 
   char accessory_id[32] = {0,};
