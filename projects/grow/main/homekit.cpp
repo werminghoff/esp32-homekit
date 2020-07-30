@@ -18,7 +18,7 @@
 #define DHT22_SENSOR_MODEL_NAME       "DHT22 v1.0"
 #define SWITCH_MODEL_NAME             "Switch v1.0"
 #define FIRMWARE_VERSION              "v1.0"
-#define DHT22_DELAY 3000
+#define DHT22_DELAY 30000
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 typedef struct {
@@ -105,34 +105,41 @@ static DHT22SensorConfig dht22Sensors[] = {
 
 static void dht22_monitoring_task(void* arg)
 {
-    int idx = (int)arg;
-
-    float temperature_float = 0;
-    float humidity_float = 0;
-
     while (1) {
+
+      float temperature_float = 0;
+      float humidity_float = 0;
+
       vTaskDelay( DHT22_DELAY / portTICK_RATE_MS );
 
-      if (dht22_read(dht22Sensors[idx].pin, &temperature_float, &humidity_float) < 0) {
-        vTaskDelay( DHT22_DELAY / portTICK_RATE_MS );
-        taskYIELD();
-        continue;
+      for(int i=0; i < ARRAY_SIZE(dht22Sensors); i++) {
+
+        auto& sensor = dht22Sensors[i];
+        if (dht22_read(sensor.pin, &temperature_float, &humidity_float) < 0) {
+          continue;
+        }
+
+        if(sensor.ev_mutex) {
+          xSemaphoreTake(sensor.ev_mutex, 0);
+        }
+
+        sensor.temperature = (int)(temperature_float * 100.0);
+        sensor.humidity = (int)(humidity_float * 100);
+
+        if (sensor.temperature_ev_handle) {
+          hap_event_response(accessory, sensor.temperature_ev_handle, (void*)sensor.temperature);
+        }
+
+        if (sensor.humidity_ev_handle) {
+          hap_event_response(accessory, sensor.humidity_ev_handle, (void*)sensor.humidity);
+        }
+
+        if(sensor.ev_mutex) {
+          xSemaphoreGive(sensor.ev_mutex);
+        }
+
       }
 
-      xSemaphoreTake(dht22Sensors[idx].ev_mutex, 0);
-
-      dht22Sensors[idx].temperature = (int)(temperature_float * 100.0);
-      dht22Sensors[idx].humidity = (int)(humidity_float * 100);
-
-      if (dht22Sensors[idx].temperature_ev_handle) {
-        hap_event_response(accessory, dht22Sensors[idx].temperature_ev_handle, (void*)dht22Sensors[idx].temperature);
-      }
-
-      if (dht22Sensors[idx].humidity_ev_handle) {
-        hap_event_response(accessory, dht22Sensors[idx].humidity_ev_handle, (void*)dht22Sensors[idx].humidity);
-      }
-
-      xSemaphoreGive(dht22Sensors[idx].ev_mutex);
     }
 }
 
@@ -286,7 +293,10 @@ void homekit_setup() {
       ESP_LOGE(TAG, "xSemaphoreCreateBinary failed!");
       esp_restart();
     }
-    //xTaskCreate(&dht22_monitoring_task, dht22Sensors[i].serial, 1024, (void*)i, 5, NULL );
+  }
+
+  if(ARRAY_SIZE(dht22Sensors) > 0) {
+    xTaskCreate(&dht22_monitoring_task, "DHT22_task", 4096, (void*)NULL, 5, NULL );
   }
 
   char accessory_id[32] = {0,};
