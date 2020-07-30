@@ -67,7 +67,8 @@ static int _subtlv_decrypt(enum hkdf_key_type htype,
         free(*subtlv);
         return -1;
     }
-    *subtlv_length = strlen((char*)*subtlv);
+    *subtlv_length = encrypted_tlv->length;
+    tlv_decoded_item_free(encrypted_tlv);
 
     return 0;
 }

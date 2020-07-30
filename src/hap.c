@@ -70,7 +70,7 @@ static int _decrypt(struct hap_connection* hc, char* encrypted, int len, char* d
 
 static void _encrypted_msg_recv(void* connection, struct mg_connection* nc, char* msg, int len) 
 {
-    char* decrypted = calloc(1, len);
+    char* decrypted = calloc(sizeof(char), len);
     if (decrypted == NULL) {
         ESP_LOGE(TAG, "calloc failded. size:%d", len);
         return;
@@ -400,8 +400,10 @@ int hap_event_response(void* acc_instance, void* ev_handle, void* value)
     }
     xSemaphoreGive(_hap_desc->mutex);
 
+#ifdef DEBUG
     ESP_LOGI(TAG, "%.*s", res_header_len, res_header);
     ESP_LOGI(TAG, "%.*s", body_len, res_body);
+#endif
 
     hap_acc_event_response_free(res_header, res_body);
 
